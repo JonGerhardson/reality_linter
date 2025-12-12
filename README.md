@@ -1,7 +1,6 @@
 # Reality Linter
 
-Kinda sorta most of the time prevent LLM hallucinations when analyzing large document sets. Made to run inside Google's "Antigravity" IDE, should work with any agentic VS Code clone. The rest of this is an AI generated readme file that was not subject to the slop prevention style guide found in this repo. 
-
+Kinda sorta most of the time prevent LLM hallucinations when analyzing large document sets. Made to run inside Google's "Antigravity" IDE, should work with any agentic VS Code clone. 
 This system transforms a folder of raw documents into a verifiable, line-tagged "Source of Truth" and provides an AI agent with tools to search, read, and rigorously verify claims before satisfying user requests.
 
 Clone repo into a project folder containing your documents, set up a python virtual environment, and set investigative.md as a workspace or global rule. Then prompt AI agent with workflow '''/start_investigation.md''' plus whatever you want it to do with your documents. It will then "ingest" the documents and convert each file to .txt with line numbers. The final report it generates should cite sources by linking to the exact line of the text file the information is from. Afterwards you can run ```/verify_claims``` which attempts to verify that the right quotes are in the right places, but as always don't trust the clankers/this is not a substitute for understanding your subject matter/etc. 
@@ -12,6 +11,9 @@ Clone repo into a project folder containing your documents, set up a python virt
 
 
   Lisence: Copyright Jonathan Gerhardson, 2025, standard BSD 3 clause + you can't use this to rip me off or if you could have instead hired me to do whatever this automates, or if I don't like you.  Jon.gerhardson@proton.me 
+
+  The rest of this is an AI generated readme file that was not subject to the slop prevention style guide found in this repo. 
+
 
 ## 🏗 System Architecture
 

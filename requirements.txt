@@ -1,0 +1,11 @@
+mcp
+fastmcp
+rank-bm25
+numpy
+openai
+pypdf
+google-generativeai
+ocrmypdf
+
+requests
+beautifulsoup4

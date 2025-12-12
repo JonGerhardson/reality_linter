@@ -4,6 +4,8 @@ Kinda sorta most of the time prevent LLM hallucinations when analyzing large doc
 
 Clone repo into a project folder containing your documents, set up a python virtual environment, and set investigative.md as a workspace or global rule. Then prompt AI agent with workflow '''/start_investigation.md''' plus whatever you want it to do with your documents. It will then "ingest" the documents and convert each file to .txt with line numbers. The final report it generates should cite sources by linking to the exact line of the text file the information is from. Afterwards you can run ```/verify_claims``` which attempts to verify that the right quotes are in the right places, but as always don't trust the clankers/this is not a substitute for understanding your subject matter/etc. 
 
+Put API key in config.py if you want to use a second AI to extract text from images and transcribe audio files. 
+
 **Why not use RAG?**
 - I genuinely do not understand what a vector is.
 - You can shovel a lot of shit into context nowadays.

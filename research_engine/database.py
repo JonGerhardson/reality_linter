@@ -59,6 +59,20 @@ CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
   INSERT INTO documents_fts(documents_fts, filename, content, baked_content) VALUES('delete', old.filename, old.content, old.baked_content);
   INSERT INTO documents_fts(filename, content, baked_content) VALUES (new.filename, new.content, new.baked_content);
 END;
+
+-- V5: Chunk embeddings for semantic search
+-- Serialization: embedding.astype(np.float32).tobytes() / np.frombuffer(blob, dtype=np.float32)
+CREATE TABLE IF NOT EXISTS chunk_embeddings (
+    id INTEGER PRIMARY KEY,
+    filename TEXT NOT NULL,
+    start_line INTEGER NOT NULL,
+    end_line INTEGER NOT NULL,
+    chunk_text TEXT NOT NULL,
+    embedding BLOB NOT NULL,
+    FOREIGN KEY(filename) REFERENCES documents(filename)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chunk_filename ON chunk_embeddings(filename);
 """
 
 def init_db(db_path=DB_PATH):
@@ -79,6 +93,42 @@ def insert_document_content(filename: str, content: str, baked_content: str, db_
             (filename, content, baked_content)
         )
         conn.commit()
+    finally:
+        conn.close()
+
+def insert_chunk_embedding(filename: str, start_line: int, end_line: int, 
+                           chunk_text: str, embedding_blob: bytes, db_path=DB_PATH):
+    """Inserts a chunk embedding. embedding_blob should be numpy.float32.tobytes()"""
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute(
+            """INSERT INTO chunk_embeddings 
+               (filename, start_line, end_line, chunk_text, embedding) 
+               VALUES (?, ?, ?, ?, ?)""",
+            (filename, start_line, end_line, chunk_text, embedding_blob)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def delete_embeddings_for_file(filename: str, db_path=DB_PATH):
+    """Removes all chunk embeddings for a file (before re-indexing)."""
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute("DELETE FROM chunk_embeddings WHERE filename = ?", (filename,))
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_all_embeddings(db_path=DB_PATH):
+    """Returns all embeddings for vector search. Use np.frombuffer(blob, dtype=np.float32)."""
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT id, filename, start_line, end_line, chunk_text, embedding FROM chunk_embeddings"
+        ).fetchall()
+        return rows
     finally:
         conn.close()
 

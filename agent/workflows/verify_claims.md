@@ -1,27 +1,61 @@
 ---
-description: Verify specific claims against source documents using "The Jury" (Multi-Model Consensus).
+description: Verify citations in reports using multi-model consensus (local + Gemini LLMs).
 ---
 
 # Verify Claims
 
-This workflow uses the **Verification Engine** to fact-check a report or a specific claim.
+Verify all citations in a report using the **Judge** verification engine.
 
-1.  **Identify Claim**:
-    *   Agent: Select a specific claim that needs verification.
-    *   Inputs needed:
-        *   **Claim**: The statement to check (e.g., "Budget increased by 15%").
-        *   **Quote**: The supporting text from the document.
-        *   **File**: The baked filename (e.g., `minutes_2024_baked.txt`).
-        *   **Lines**: Start and End line numbers.
+## Quick Start
 
-2.  **Execute Judge**:
-    *   Agent: Run the Judge CLI.
-    *   Command: 
-        ```bash
-        python -m research_engine.judge "CLAIM" "QUOTE" "FILENAME" START_LINE END_LINE
-        ```
-    *   Example: `python -m research_engine.judge "Budget up 15%" "budget increase of 15%" "doc_baked.txt" 10 12`
+```bash
+// turbo
+python scripts/verify_report.py reports/<report_name>.md
+```
 
-3.  **Interpret Result**:
-    *   Output: JSON with `verification_result` ("VERIFIED", "REFUTED", "UNVERIFIED") and `confidence_score`.
-    *   Action: If REFUTED, flag the claim in the report.
+## What It Does
+
+1. **Parses** the markdown report for citations `[file:Lxxxx](path)`
+2. **Checks** each citation against source files in `data/canonical/`
+3. **Runs LLM** semantic analysis (local + Gemini consensus)
+4. **Generates** read-only verification report
+
+## Output
+
+- **Location:** `reports/verification_reports/verification_<report>.md`
+- **Logs:** `debug_output/llm_logs/<report>/` (gemini_0001.txt, local_0001.txt, etc.)
+
+## Verdicts
+
+| Verdict | Meaning |
+|---------|---------|
+| VALID | Quote is substantive, in-context, supports the claim |
+| MISLEADING | Quote exists but context changes meaning |
+| INSUFFICIENT | Quote too short (<5 words) or generic |
+| UNSUPPORTED | Quote doesn't logically support the claim |
+| QUOTE_NOT_FOUND | Quote text not found in cited lines (low match score) |
+
+## CLI Options
+
+```bash
+python scripts/verify_report.py <report.md> [options]
+
+Options:
+  --canonical-dir PATH   Path to canonical data (default: data/canonical)
+  --output PATH          Custom output path (default: auto-generated)
+  --json                 Also output JSON to stdout
+```
+
+## Manual Single-Claim Verification
+
+```bash
+python -m research_engine.judge "CLAIM" "QUOTE" "FILENAME" START END
+```
+
+Example:
+```bash
+python -m research_engine.judge \
+  "SCEs must select one of three license classes" \
+  "permitted to select one of the following classes" \
+  "ocm04109606_baked.txt" 13294 13296
+```

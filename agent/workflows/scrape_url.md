@@ -25,5 +25,30 @@ This workflow combines Agentic analysis (Browser) with efficiency (Python Script
     *   Check `data/canonical/` for the new `_baked.txt` file.
     *   **Anti-Summary Check**: Verify the `_baked.txt` file contains **raw, full-text content**, not a summary. If the file is a summary, delete it and retry with a different extraction method.
 
+## Scenario: Complex Captcha / Bot Detection (e.g. MassCourts)
+
+If the standard `browser_subagent` blocked by Cloudflare/Akamai or requires a complex captcha:
+
+1.  **Launch Debug Browser for User**:
+    *   Start Chrome with remote debugging enabled so the user can intervene.
+    *   Command: `google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome_debug "<URL>" &`
+2.  **Request User Intervention**:
+    *   Use `notify_user` to ask the user to solve the captcha and navigate to the target page.
+3.  **Connect & Automate**:
+    *   Use a Python script with `playwright` to connect to the existing session and perform the extraction.
+    *   **Reference Script**: `scripts/masscourts_cdp_search.py`
+    *   **Snippet**:
+        ```python
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.connect_over_cdp("http://localhost:9222")
+            page = browser.contexts[0].pages[0]
+            # Perform actions...
+        ```
+4.  **Complex Interactions**:
+    *   For tasks requiring navigation (e.g., clicking search results, pagination):
+    *   **Reference Script**: `scripts/masscourts_cdp_extract.py`
+    *   **Technique**: Use `page.locator("...").click()` to navigate, then `page.wait_for_load_state` or `time.sleep` to handle AJAX transitions before extracting content.
+
 ## Best Practices
 *   **Input Hygiene**: When using the browser to fill forms (e.g., search bars), explicitly **clear the field** before sending keys to prevent concatenation errors with previous text.

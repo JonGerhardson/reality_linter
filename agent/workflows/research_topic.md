@@ -14,7 +14,7 @@ This workflow allows the agent to build the knowledge base by researching a spec
 2.  **Select & Ingest**:
     *   Agent: For each relevant URL:
         *   Run `python scripts/universal_scraper.py "<URL>" "{}"` (Empty JSON triggers Smart Discovery).
-        *   *Fallback*: If the script fails (403/Empty), use the `browser_subagent` to visit the page and manually pipe text to `scripts/bake_text.py`.
+        *   *Fallback*: If the script fails (403/Empty), use the `browser_subagent` to manually extract text.
 
 3.  **Synthesize**:
     *   (Optional) If requested, the Agent can now query the baked documents to answer the user's question.
